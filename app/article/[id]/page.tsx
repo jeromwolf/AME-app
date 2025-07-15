@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import Script from 'next/script'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -13,52 +14,66 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [speechRate, setSpeechRate] = useState(1.0)
+  const [selectedVoice, setSelectedVoice] = useState('ko-KR-Wavenet-C')
+  const [premiumTTS, setPremiumTTS] = useState<any>(null)
 
-  const handleTTSPlay = () => {
-    const articleContent = document.getElementById('articleContent')
-    if (!articleContent) return
+  useEffect(() => {
+    // PremiumTTS 클래스가 로드되면 인스턴스 생성
+    if (typeof window !== 'undefined' && (window as any).PremiumTTS) {
+      setPremiumTTS(new (window as any).PremiumTTS())
+    }
+  }, [])
 
-    const text = articleContent.innerText
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = 'ko-KR'
-    utterance.rate = speechRate
-    utterance.pitch = 1.0
+  const handleGoogleTTSPlay = async () => {
+    if (!premiumTTS) {
+      alert('TTS 시스템이 로드되지 않았습니다.')
+      return
+    }
 
-    utterance.onstart = () => {
+    const articleElement = document.querySelector('.article-content')
+    if (!articleElement) return
+
+    try {
       setIsPlaying(true)
       setIsPaused(false)
-    }
 
-    utterance.onend = () => {
+      await premiumTTS.playArticle(articleElement, {
+        voice: selectedVoice,
+        speakingRate: speechRate,
+        provider: 'google'
+      })
+    } catch (error) {
+      console.error('Google TTS 오류:', error)
+      alert('TTS 재생 중 오류가 발생했습니다.')
       setIsPlaying(false)
-      setIsPaused(false)
     }
-
-    speechSynthesis.speak(utterance)
   }
 
   const handleTTSPause = () => {
-    if (speechSynthesis.speaking) {
-      speechSynthesis.pause()
+    if (premiumTTS) {
+      premiumTTS.pause()
       setIsPaused(true)
     }
   }
 
   const handleTTSResume = () => {
-    if (speechSynthesis.paused) {
-      speechSynthesis.resume()
+    if (premiumTTS) {
+      premiumTTS.resume()
       setIsPaused(false)
     }
   }
 
   const handleTTSStop = () => {
-    speechSynthesis.cancel()
+    if (premiumTTS) {
+      premiumTTS.stop()
+    }
     setIsPlaying(false)
     setIsPaused(false)
   }
 
   return (
     <>
+      <Script src="/tts-config.js" strategy="beforeInteractive" />
       {/* Header */}
       <header className="main-header">
         <div className="header-top">
@@ -131,8 +146,8 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                 {/* TTS Controls */}
                 <div className="tts-controls">
                   {!isPlaying ? (
-                    <button onClick={handleTTSPlay} className="tts-btn play" aria-label="기사 읽기">
-                      <span className="icon">🔊</span> 기사 듣기
+                    <button onClick={handleGoogleTTSPlay} className="tts-btn play" aria-label="기사 읽기">
+                      <span className="icon">🔊</span> Google TTS로 기사 듣기
                     </button>
                   ) : (
                     <>
@@ -151,6 +166,17 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                     </>
                   )}
                   <div className="tts-settings">
+                    <label htmlFor="ttsVoice">음성:</label>
+                    <select 
+                      id="ttsVoice" 
+                      value={selectedVoice} 
+                      onChange={(e) => setSelectedVoice(e.target.value)}
+                    >
+                      <option value="ko-KR-Wavenet-C">남성 1 (차분한 목소리)</option>
+                      <option value="ko-KR-Wavenet-D">남성 2 (중후한 목소리)</option>
+                      <option value="ko-KR-Wavenet-A">여성 1 (자연스러운 목소리)</option>
+                      <option value="ko-KR-Wavenet-B">여성 2 (밝은 목소리)</option>
+                    </select>
                     <label htmlFor="ttsSpeed">속도:</label>
                     <select 
                       id="ttsSpeed" 
