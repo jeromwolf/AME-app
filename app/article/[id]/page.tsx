@@ -13,27 +13,52 @@ interface ArticlePageProps {
 export default function ArticlePage({ params }: ArticlePageProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [speechRate, setSpeechRate] = useState(1.0)
   const [selectedVoice, setSelectedVoice] = useState('ko-KR-Wavenet-C')
   const [premiumTTS, setPremiumTTS] = useState<any>(null)
+  const [ttsReady, setTtsReady] = useState(false)
+  const [ttsTimeout, setTtsTimeout] = useState(false)
 
   useEffect(() => {
-    // PremiumTTS 클래스가 로드되면 인스턴스 생성
-    if (typeof window !== 'undefined' && (window as any).PremiumTTS) {
-      setPremiumTTS(new (window as any).PremiumTTS())
-    }
-  }, [])
+    // 페이지 로드 후 TTS 시스템 확인
+    const timer = setInterval(() => {
+      if (typeof window !== 'undefined' && (window as any).PremiumTTS && !ttsReady) {
+        setPremiumTTS(new (window as any).PremiumTTS())
+        setTtsReady(true)
+        console.log('TTS 시스템 준비 완료')
+      }
+    }, 1000)
+
+    // 10초 후 타이머 정리 및 타임아웃 표시
+    setTimeout(() => {
+      clearInterval(timer)
+      if (!ttsReady) {
+        setTtsTimeout(true)
+      }
+    }, 10000)
+
+    return () => clearInterval(timer)
+  }, [ttsReady])
 
   const handleGoogleTTSPlay = async () => {
     if (!premiumTTS) {
-      alert('TTS 시스템이 로드되지 않았습니다.')
-      return
+      // TTS 시스템이 로드되지 않았으면 다시 시도
+      if (typeof window !== 'undefined' && (window as any).PremiumTTS) {
+        setPremiumTTS(new (window as any).PremiumTTS())
+        setTimeout(() => handleGoogleTTSPlay(), 100)
+        return
+      } else {
+        console.log('TTS 시스템이 로드되지 않았습니다.')
+        return
+      }
     }
 
     const articleElement = document.querySelector('.article-content')
     if (!articleElement) return
 
     try {
+      setIsLoading(true)
       setIsPlaying(true)
       setIsPaused(false)
 
@@ -42,10 +67,13 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         speakingRate: speechRate,
         provider: 'google'
       })
+      
+      setIsLoading(false)
     } catch (error) {
       console.error('Google TTS 오류:', error)
       alert('TTS 재생 중 오류가 발생했습니다.')
       setIsPlaying(false)
+      setIsLoading(false)
     }
   }
 
@@ -69,11 +97,29 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     }
     setIsPlaying(false)
     setIsPaused(false)
+    setIsLoading(false)
+  }
+
+  const handleRetryTTS = () => {
+    setTtsTimeout(false)
+    setTtsReady(false)
+    // 페이지 새로고침
+    window.location.reload()
   }
 
   return (
     <>
-      <Script src="/tts-config.js" strategy="beforeInteractive" />
+      <Script 
+        src="/tts-config.js" 
+        strategy="afterInteractive" 
+        onLoad={() => {
+          console.log('TTS 스크립트 로드 완료')
+          if (typeof window !== 'undefined' && (window as any).PremiumTTS) {
+            setPremiumTTS(new (window as any).PremiumTTS())
+            setTtsReady(true)
+          }
+        }}
+      />
       {/* Header */}
       <header className="main-header">
         <div className="header-top">
@@ -144,8 +190,22 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                 <p className="lead">소프트웨어 중심의 차량 개발로 패러다임 전환, E/E 아키텍처 혁신과 OTA 업데이트가 핵심</p>
                 
                 {/* TTS Controls */}
-                <div className="tts-controls">
-                  {!isPlaying ? (
+                <div className={`tts-controls ${isPlaying && !isLoading ? 'playing' : ''}`}>
+                  {isLoading ? (
+                    <button className="tts-btn loading" disabled aria-label="로딩 중">
+                      <span className="icon">⏳</span> 음성 생성 중...
+                    </button>
+                  ) : !ttsReady ? (
+                    ttsTimeout ? (
+                      <button onClick={handleRetryTTS} className="tts-btn" aria-label="TTS 시스템 재시도">
+                        <span className="icon">🔄</span> TTS 시스템 재시도
+                      </button>
+                    ) : (
+                      <button className="tts-btn loading" disabled aria-label="TTS 시스템 준비 중">
+                        <span className="icon">⏳</span> TTS 시스템 준비 중...
+                      </button>
+                    )
+                  ) : !isPlaying ? (
                     <button onClick={handleGoogleTTSPlay} className="tts-btn play" aria-label="기사 읽기">
                       <span className="icon">🔊</span> Google TTS로 기사 듣기
                     </button>

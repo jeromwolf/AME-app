@@ -140,6 +140,13 @@ export default function Home() {
                 </div>
               </section>
 
+              {/* Middle Banner Ad */}
+              <div className="ad-banner ad-middle">
+                <a href="https://www.ansys.com/ko-kr" target="_blank" rel="noopener noreferrer">
+                  <img src="https://ssl.logger.co.kr/tracker_ad.tsp?u=37061&mode=I&adCode=82803" alt="Ansys 자율주행브리티HUD 설계 웨비나" style={{width: '100%', maxWidth: '300px', height: 'auto'}} />
+                </a>
+              </div>
+
               {/* SDV Special Section */}
               <section className="sdv-section">
                 <h2 className="section-title">SDV(Software Defined Vehicle) 특집</h2>
@@ -158,6 +165,58 @@ export default function Home() {
                 </div>
               </section>
             </section>
+
+            {/* Sidebar */}
+            <aside className="sidebar">
+              {/* Popular Articles */}
+              <div className="popular-articles">
+                <h3>인기 기사</h3>
+                <ol className="popular-list">
+                  <li><a href="/article/1">현대차그룹, 차세대 전기차 플랫폼 'E-GMP 2.0' 공개</a></li>
+                  <li><a href="/article/2">테슬라 FSD v12, 국내 규제 승인 획득</a></li>
+                  <li><a href="/article/3">LG에너지솔루션, NCM 배터리 에너지밀도 20% 향상</a></li>
+                  <li><a href="/article/4">현대모비스, 홀로그램 HUD 기술 세계 최초 양산</a></li>
+                </ol>
+              </div>
+
+              {/* Sidebar Banner Ad */}
+              <div className="ad-banner ad-sidebar">
+                <a href="https://www.digikey.kr/" target="_blank" rel="noopener noreferrer">
+                  <img src="https://s0.2mdn.net/simgad/8235331197683898298" alt="DigiKey Amphenol IP68/69K 등급 커넥터" style={{width: '100%', maxWidth: '300px', height: 'auto'}} />
+                </a>
+              </div>
+
+              {/* Newsletter */}
+              <div className="newsletter">
+                <h3>뉴스레터 구독</h3>
+                <p>매주 최신 자동차 전자 기술 동향을 받아보세요.</p>
+                <form className="newsletter-form">
+                  <input type="email" placeholder="이메일 주소" />
+                  <button type="submit">구독하기</button>
+                </form>
+              </div>
+
+              {/* Tall Sidebar Banner Ad */}
+              <div className="ad-banner ad-sidebar-tall">
+                <a href="https://www.inosimulation.com" target="_blank" rel="noopener noreferrer" style={{display: 'block', background: '#1a1a2e', color: 'white', padding: '30px 20px', textAlign: 'center', borderRadius: '8px', textDecoration: 'none'}}>
+                  <div style={{marginBottom: '20px'}}>
+                    <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '10px'}}>INOSIMULATION</div>
+                    <div style={{fontSize: '14px', opacity: '0.8'}}>ADAS/AD 검증 솔루션</div>
+                  </div>
+                  <div style={{background: '#00f5ff', color: '#1a1a2e', padding: '15px', borderRadius: '4px', margin: '20px 0'}}>
+                    <div style={{fontSize: '16px', fontWeight: 'bold'}}>차량 시뮬레이션</div>
+                    <div style={{fontSize: '12px', marginTop: '5px'}}>실제 환경 재현</div>
+                  </div>
+                  <div style={{fontSize: '12px', opacity: '0.8'}}>
+                    자율주행 시나리오 검증부터<br />
+                    센서 융합 테스트까지
+                  </div>
+                  <div style={{marginTop: '20px', fontSize: '14px', fontWeight: 'bold', color: '#00f5ff'}}>
+                    → 자세히 보기
+                  </div>
+                </a>
+              </div>
+            </aside>
           </div>
         </div>
       </main>
